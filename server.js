@@ -15,6 +15,7 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 const monsterString = require("./monsterString.js");
+const encounterArr = require("./encounterArr.js");
 
 // Endpoints
 app.get("/", (req, res) => {
@@ -23,27 +24,27 @@ app.get("/", (req, res) => {
 });
 
 app.get("/monster", async (req, res) => {
-//   const formData =
-// `{
-//   "prompt": "Make a ${req.query.description} monster with cr ${req.query.cr}",
-//   "monster": "${req.query.type}",`;
-//   const combinedInput = monsterString + formData;
-//   const monster = await openai.createCompletion({
-//       model: "text-davinci-002",
-//       prompt: combinedInput,
-//       temperature: 1,
-//       max_tokens: 1024,
-//       top_p: 1,
-//       frequency_penalty: 0,
-//       presence_penalty: 0,
-//       stop: ["\n\n"],
-//     });
-//   let combinedResponse = formData + monster.data.choices[0].text;
-//   if (combinedResponse[combinedResponse.length - 1] !== '}') {
-//     combinedResponse += '}';
-//   }
+  const formData =
+  `{
+    "prompt": "Make a ${req.query.description} monster with cr ${req.query.cr}",
+    "monster": "${req.query.type}",`;
+    const combinedInput = monsterString + formData;
+    const monster = await openai.createCompletion({
+        model: "text-davinci-002",
+        prompt: combinedInput,
+        temperature: 1,
+        max_tokens: 1024,
+        top_p: 1,
+        frequency_penalty: 0,
+        presence_penalty: 0,
+        stop: ["\n\n"],
+      });
+    let combinedResponse = formData + monster.data.choices[0].text;
+    if (combinedResponse[combinedResponse.length - 1] !== '}') {
+      combinedResponse += '}';
+    }
 
-  const spoof =`{
+  const spoof = `{
   "prompt": "Make a large and scary monster with cr 6",
   "monster": "Elephant Zombie",
   "size-type-and-alignment": "Huge undead, neutral evil",
@@ -78,8 +79,23 @@ app.get("/monster", async (req, res) => {
   "describe-how-it-looks-and-acts": "An elephant zombie is a massive undead elephant. Its skin is grey and rotting, and its eyes are white and blank."
 }`;
 
-  res.status(201).send(spoof);
-  // res.status(201).send(combinedResponse);
+  // res.status(201).send(spoof);
+  res.status(201).send(combinedResponse);
+});
+
+app.get("/encounter", async (req, res) => {
+  const encounterString =
+    encounterArr[0] + req.query.monsters + encounterArr[1];
+  const encounter = await openai.createCompletion({
+    model: "text-davinci-002",
+    prompt: encounterString,
+    temperature: 1,
+    max_tokens: 512,
+    top_p: 1,
+    frequency_penalty: 2,
+    presence_penalty: 2,
+  });
+  res.status(201).send(encounter.data.choices[0].text);
 });
 
 app.get("*", (req, res) => {
